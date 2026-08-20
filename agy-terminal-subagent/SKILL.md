@@ -18,7 +18,7 @@ agy -p "<prompt>" \
   --model "<model>"
 ```
 #### example output:
-{ "conversation_id": "6d36ef13-ca69-4b55-aaac-5b57aa02cba2", "status": "SUCCESS", "response": "Agent response text...", "duration_seconds": 12.1, "num_turns": 1, "usage": { "input_tokens": 28160, "output_tokens": 292, "total_tokens": 28452 }
+{ "conversation_id": "6d36ef13-ca69-4b55-aaac-5b57aa02cba2", "status": "SUCCESS", "response": "Agent response text...", "duration_seconds": 12.1, "num_turns": 1, "usage": { "input_tokens": 28160, "output_tokens": 292, "total_tokens": 28452 } }
 
 ### Continue a session
 
