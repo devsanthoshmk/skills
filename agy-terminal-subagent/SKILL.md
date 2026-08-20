@@ -1,249 +1,138 @@
 ---
 name: agy-terminal-subagent
-description: Custom agy cli based better subagent Whenever a task would normally benefit from a subagent, first evaluate whether it can be delegated to AGY Terminal Subagent, and use AGY when it is suitable.
+description: Custom agy cli based better subagent Whenever a task would normally benefit from a subagent use this skill.
 ---
 
-# AGY Terminal Subagent
+# AGY Subagent Delegation
 
-Delegate eligible work to AGY by default.
+Delegate tasks to the Antigravity CLI (agy) as headless sub-processes. This can replace built-in subagents with fully configurable CLI workers that support custom model routing with reasoning tiers, session continuation.
 
-AGY is an external terminal-based execution system. Each AGY invocation is an isolated worker that only knows what is explicitly included in its prompt. It has **no access** to the primary agent's hidden reasoning, prior conversation, memory, or shared state.
+## Invocation
 
-Use this skill whenever a task can be completed independently in a single execution.
+### New session
 
----
+```bash
+agy -p "<prompt>" \
+  --dangerously-skip-permissions \
+  --output-format json \
+  --model "<model>"
+```
+#### example output:
+{ "conversation_id": "6d36ef13-ca69-4b55-aaac-5b57aa02cba2", "status": "SUCCESS", "response": "Agent response text...", "duration_seconds": 12.1, "num_turns": 1, "usage": { "input_tokens": 28160, "output_tokens": 292, "total_tokens": 28452 }
 
-# When to Use
+### Continue a session
 
-Delegate the task if it is:
+```bash
+agy --conversation "<CONVERSATION_ID>" \
+  -p "<follow-up>" \
+  --dangerously-skip-permissions \
+  --output-format json \
+  --model "<model>"
+```
 
-- independent
-- self-contained
-- bounded
-- read-heavy
-- easier to verify than perform directly
-- based on supplied files, logs, images, audio, video, documents, URLs, or other artifacts
-- primarily extraction, search, comparison, verification, classification, summarization, analysis, or reporting
+## Model selection
 
-If a task can be safely split into multiple independent units, launch multiple AGY workers instead of overloading one prompt.
+Choose the cheapest model that can reliably complete the task:
 
-When possible, isolate noisy or expensive work from the primary conversation.
+| Model                      | Use for                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `gemini-3.7-flash-low`     | Simple edits, extraction, formatting, straightforward text processing               |
+| `gemini-3.7-flash-high`    | Clear, self-contained implementation tasks with little independent decision-making        |
+| `claude-sonnet-4-6`        | Complex implementation/debugging requiring more decisions while remaining token-efficient |
+| `claude-opus-4-6-thinking` | Architecture, planning, difficult trade-offs, or high-value decisions (this model is the costliest model)|
 
----
+Rule of thumb:
 
-# When NOT to Use
+```text
+very simple execution -> flash-low
+have clear execution plan -> flash-high
+complex execution but high token consumption -> sonnet
+important decisions and complex execution -> opus
+```
 
-Do not delegate when the task:
+Do not use Opus merely because a task is large; use it when the quality of decisions matters.
 
-- depends on hidden conversation context
-- requires interactive back-and-forth
-- requires tools or permissions unavailable to AGY
-- modifies shared state across multiple coupled operations
-- is too small to justify delegation
-- cannot be fully specified before execution
+## Delegation prompt
 
-If information is missing, obtain it **before** launching AGY.
-
-Example:
-
-> Give me the implementation details and execution log for X before continuing.
-
----
-
-# Preparing the Prompt
-
-Every AGY prompt must be completely self-contained.
+Give the subagent a self-contained task.
 
 Include:
 
-- the complete task
-- required context only
-- relevant files, excerpts, or URLs
-- constraints
-- required output format
-- validation requirements
-- logging requirements
+1. Goal
+2. Relevant constraints
+3. Expected output
+4. Important files/context
+5. Verification requirements
 
-AGY is single-pass.
+Avoid repeating information already available to the subagent through the repository or tools since the this agy agent run with all the rules skills that you have.
 
-Once execution begins, it cannot ask follow-up questions.
+Prefer:
 
-Everything required to complete the task must already be present in the prompt.
+```text
+Inspect the repository and fix X.
 
----
+Constraints:
+- Keep API compatibility.
+- Do not change unrelated behavior.
 
-# Required Output
-
-Request only the result—not internal reasoning.
-
-Prefer outputs that are:
-
-- concise
-- verifiable
-- artifact-based
-- deterministic where possible
-
-Always specify the expected output structure before launching AGY.
-
----
-
-# Execution Log
-
-Every AGY worker should generate a temporary execution log containing significant actions such as:
-
-- commands executed
-- files accessed
-- searches performed
-- warnings
-- errors
-- decisions
-- generated artifacts
-
-The final response should include the path to this temporary execution log.
-
----
-
-# Missing Information
-
-If AGY cannot complete the task because required information is missing, it should return:
-
-```
-NEEDS_INPUT: <missing information>
+Verify:
+- Run the relevant tests.
+- Report changed files and remaining issues.
 ```
 
-Do not continue from incomplete work.
+## Session continuation
 
-Instead:
+Save `conversation_id` from the JSON response when follow-up work is likely.
 
-1. gather the missing information
-2. create a new self-contained prompt
-3. launch a new AGY worker
-4. ignore any incomplete output from the previous execution
+Use the same conversation for iterative work:
 
----
+```text
+initial investigation
+        ↓
+implementation
+        ↓
+verification
+        ↓
+follow-up fixes
+```
 
-# Model Selection
+Start a new session when the task changes substantially or the existing context becomes noisy.
 
-Choose the smallest capable model.
+## Transcript inspection
 
-| Model | Use For |
-|--------|----------|
-| gemini-3.7-flash-medium | very small, routine, or trivial extraction and scanning work |
-| gemini-3.7-flash-high | standard reasoning, structured reading, summarization, comparison, and moderate analysis |
-| claude-opus-4-6-thinking | complex reasoning, high-value decisions, difficult analysis, or situations where maximum accuracy is worth the higher cost |
+AGY stores session transcripts locally.
 
----
+```text
+~/.gemini/antigravity-cli/brain/<CONVERSATION_ID>/.system_generated/logs/
+```
 
-# Verification
+Important files:
 
-Treat AGY output as evidence rather than unquestionable truth.
+```text
+transcript.jsonl       # compact transcript
+transcript_full.jsonl  # full raw transcript
+```
 
-For important work, verify using one or more of:
+Prefer `transcript.jsonl`. Use `transcript_full.jsonl` only when truncated output is actually required.
 
-- another AGY worker
-- a different model
-- direct tool verification
-- a fresh independent pass
+Never load the entire transcript into context.
 
----
-
-# Default Behavior
-
-When a task satisfies the delegation criteria:
-
-1. Gather any missing context.
-2. Construct a complete self-contained prompt.
-3. Choose the smallest capable model.
-4. Launch AGY.
-5. Review the result.
-6. Verify when appropriate.
-
-Perform work directly only when delegation is unnecessary or unsuitable.
-
----
-
-# Invocation
-
-Launch AGY using:
+### Extract user/assistant messages
 
 ```bash
-agy -p "<complete self-contained prompt>" --model "<exact model name>"
+jq -r '
+  select(.type=="USER_INPUT" or .type=="PLANNER_RESPONSE")
+  | "[\(.source)]: \(.content)"
+' transcript.jsonl
 ```
 
-Where:
-
-- `-p` is the entire prompt
-- `--model` must exactly match the selected model identifier
-
-Example:
+### Extract tool activity
 
 ```bash
-agy -p "Summarize the following document and extract all security risks: docs/security.md. Return a markdown table and include the execution log path." --model "gemini-3.7-flash-medium" --dangerously-skip-permissions
+jq -c '
+  select(.tool_calls != null)
+  | {thinking, tools: .tool_calls}
+' transcript.jsonl
 ```
 
-If the task contains multiple unrelated units of work, invoke multiple AGY workers instead of combining everything into one prompt.
-
----
-
-# Glossary
-
-## Primary Agent
-
-The AI currently interacting with the user.
-
----
-
-## AGY
-
-The external terminal CLI used to execute delegated work.
-
----
-
-## Worker
-
-A single AGY execution.
-
-Each worker is isolated and executes exactly one self-contained task.
-
----
-
-## Subagent
-
-An AGY worker launched by the primary agent.
-
-Within this skill, **worker** and **subagent** are interchangeable terms.
-
----
-
-## Terminal Worker
-
-An AGY worker executing inside a terminal environment using only the context provided in its prompt.
-
----
-
-## Terminal Subagent
-
-A terminal worker launched for one isolated task.
-
-It:
-
-- has no access to hidden conversation context
-- cannot perform follow-up interaction
-- cannot access previous AGY executions
-- communicates only through its final output and execution log
-
----
-
-## Prompt
-
-The complete instructions supplied to an AGY worker.
-
-Because AGY is single-pass, the prompt must contain everything needed for successful execution.
-
----
-
-## Execution Log
-
-A temporary file generated during execution that records significant actions performed by the worker.
-
-Its path should always be included in the final response.
+Use `conversation_id` for continuation and `response` for the subagent result.
