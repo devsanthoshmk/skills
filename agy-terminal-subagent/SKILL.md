@@ -15,7 +15,9 @@ Delegate tasks to the Antigravity CLI (agy) as headless sub-processes. This can 
 agy -p "<prompt>" \
   --dangerously-skip-permissions \
   --output-format json \
-  --model "<model>"
+  --model "<model>" \
+  --print-timeout 24h \
+  | jq .
 ```
 #### example output:
 { "conversation_id": "6d36ef13-ca69-4b55-aaac-5b57aa02cba2", "status": "SUCCESS", "response": "Agent response text...", "duration_seconds": 12.1, "num_turns": 1, "usage": { "input_tokens": 28160, "output_tokens": 292, "total_tokens": 28452 } }
@@ -27,7 +29,9 @@ agy --conversation "<CONVERSATION_ID>" \
   -p "<follow-up>" \
   --dangerously-skip-permissions \
   --output-format json \
-  --model "<model>"
+  --model "<model>"\
+  --print-timeout 24h \
+  | jq .
 ```
 
 ## Model selection
