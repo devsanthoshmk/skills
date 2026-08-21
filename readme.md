@@ -1,3 +1,15 @@
+# Instructiions to install the skill
+
+```bash
+npx skills add devsanthoshmk/skills
+```
+
+# Instructiions to install the skill
+
+```bash
+npx skills update devsanthoshmk/skills
+```
+
 # Instructiions to use the skill
 
 ## agy-terminal-subagent
