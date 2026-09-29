@@ -8,7 +8,7 @@ description: Antigravity Boost and Concurrency Acceleration skill. Activates hig
 > Harness adapter (opencode / OpenChamber — numbers and regimes unchanged):
 > `subagent` tool with `background=true` is the dispatch primitive (batches of
 > at most 16 per turn, back-to-back, refill on completion); `teamwork_preview_layer`
-> is a manifest-only router subagent (see `../colosseum-teamwork-and-engine/HARNESS_ADAPTER_OPENCODE.md`).
+> is a manifest-only router subagent (see `../colosseum/HARNESS_ADAPTER_OPENCODE.md`).
 > No `T` parameter exists here — `T=1.0` means "diverse candidates" wording via
 > `general`/`explore`, `T=0.1-0.2` means "strict, zero-hallucination" wording via
 > `sonnet-agent`/`opus-agent`. Ceiling 128, partition above 32, quorum ≥80%.
