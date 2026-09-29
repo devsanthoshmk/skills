@@ -1,9 +1,9 @@
 ---
-name: colosseum
-description: Autonomous mathematical theorem-proving pipeline and tournament orchestration engine. Coordinates multi-phase proof exploration, LaTeX decomposition, parallel dependency-driven subproblem solving, adversarial falsification, tournament aggregation trees, and global referee verification waves under OpenCode / OpenChamber harnesses.
+name: teamwork
+description: Antigravity Teamwork & Colosseum autonomous mathematical theorem-proving pipeline and tournament orchestration engine. Coordinates multi-phase proof exploration, LaTeX decomposition, parallel dependency-driven subproblem solving, adversarial falsification, tournament aggregation trees, and global referee verification waves under OpenCode / OpenChamber harnesses.
 ---
 
-# Colosseum Autonomous Proof Orchestration & Tournament Engine
+# Teamwork Autonomous Proof Orchestration & Tournament Engine
 
 > Harness adapter (opencode / OpenChamber — behaviour unchanged):
 > See [HARNESS_ADAPTER_OPENCODE.md](HARNESS_ADAPTER_OPENCODE.md) for full mapping.

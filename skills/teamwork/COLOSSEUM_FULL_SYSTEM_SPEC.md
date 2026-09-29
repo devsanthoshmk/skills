@@ -1,4 +1,4 @@
-> Harness: opencode/OpenChamber transport only — semantics unchanged. See colosseum-teamwork-and-engine/HARNESS_ADAPTER_OPENCODE.md (invoke_subagent->subagent background=true batches of 16, view_file->read, write_to_file->write/edit, T->wording+agent choice).
+> Harness: opencode/OpenChamber transport only — semantics unchanged. See HARNESS_ADAPTER_OPENCODE.md (invoke_subagent->subagent background=true batches of 16, view_file->read, write_to_file->write/edit, T->wording+agent choice).
 
 
 ```
