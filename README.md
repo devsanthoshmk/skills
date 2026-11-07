@@ -1,13 +1,14 @@
 # AI agent skills
 
 ## Purpose
-This repository provides modular AI agent skills, prompt templates, and agentic tools for OpenCode, OpenChamber, and autonomous CLI environments. Agents load these skills to execute multi-agent orchestration, automated security audits, concurrency scaling, and terminal delegation.
+This repository provides modular agent skills, prompt templates, and CLI tools for OpenCode and OpenChamber. Agents load these skills to coordinate subagents, audit security, scale concurrency, and delegate CLI tasks.
 
 ## Architecture
-Each skill lives in a directory under `skills/` containing a `SKILL.md` specification and optional reference guides. Agent runtimes parse YAML frontmatter name and description fields to select matching skills for incoming tasks.
+Each skill lives in a directory under `skills/` with a `SKILL.md` specification and optional reference guides. Runtimes match skills to tasks using the name and description in each skill's YAML frontmatter.
 
-The repository contains four primary skills:
+The repository contains five primary skills:
 
+- **unity-lite.** Lightweight multi-agent coordination workflow with execution group ordering, isolated delegation, and verification gates.
 - **teamwork.** Orchestrates multi-phase proof exploration, problem decomposition, parallel solving, adversarial falsification, tournament aggregation trees, and referee verification waves.
 - **boost.** Scales parallel subagent execution up to 128 workers using sliding-window dispatch, dynamic refill, temperature asymmetry routing, and quorum advancement.
 - **securecoder.** Scans codebases for web vulnerabilities, runs automated security checks, verifies exploit scenarios, and writes remediation audit reports.
@@ -29,6 +30,7 @@ npx skills update devsanthoshmk/skills
 Install individual skills directly:
 
 ```bash
+npx skills add devsanthoshmk/skills/skills/unity-lite
 npx skills add devsanthoshmk/skills/skills/teamwork
 npx skills add devsanthoshmk/skills/skills/boost
 npx skills add devsanthoshmk/skills/skills/securecoder
@@ -38,7 +40,29 @@ npx skills add devsanthoshmk/skills/skills/agy-terminal-subagent
 ## Usage
 Autonomous agents and LLM workflow patterns execute these skills during task runs.
 
-### Teamwork orchestration
+### unity-lite orchestration
+The `unity-lite` skill provides structured multi-agent coordination within a self-contained workflow:
+
+- **Direct Main Thread execution.** The Level-0 agent executes single-step tasks directly instead of spawning subagents.
+- **Decomposition and planning.** Spawns a Level-1 Planning Agent to structure complex tasks into numbered execution groups:
+  ```text
+  [Group 1] ──┬── <Task A>
+              ├── <Task B>
+              └── <Task C>
+                   │
+                   ▼
+  [Group 2] ──┬── <Task D>
+              └── <Task E>
+                   │
+                   ▼
+  [Group 3] ──── <Task F>
+  ```
+- **Self-contained delegation.** Passes complete context, constraints, and file paths to workers rather than raw transcript dumps.
+- **Two-stage verification.** A Level-1 Verification Agent inspects intent fulfillment and can spawn Level-2 agents for decision extraction and verification.
+- **Bounded correction loop.** Feeds verification failures back to the producing agent with concrete evidence and caps automatic retries at 3 iterations.
+- **Terminal contract.** Returns strictly `Completed`, `Incomplete`, `Blocked`, `Failed`, or `Requires User Input`.
+
+### teamwork orchestration
 The teamwork skill coordinates analytical workflows across five execution phases:
 
 1. **Strategy exploration.** Dispatches 32 parallel exploration workers with adversarial falsification and tournament aggregation.
@@ -49,16 +73,16 @@ The teamwork skill coordinates analytical workflows across five execution phases
 
 Agents select this skill for theorem proving, complex algorithmic problems, and multi-candidate architecture evaluation.
 
-### Boost concurrency engine
+### boost concurrency engine
 The boost skill removes serialization bottlenecks across parallel subagent tasks:
 
 - **Concurrency ceiling.** Dispatches up to 128 parallel subagents.
-- **Dynamic refill.** Fills open worker slots immediately as child tasks complete, preventing head-of-line blocking.
-- **Partitioning.** Partitions workloads exceeding 32 workers into slices managed by sub-orchestrators.
+- **Dynamic refill.** Fills open worker slots immediately as child tasks complete to avoid head-of-line blocking.
+- **Partitioning.** Partitions workloads over 32 workers into slices managed by sub-orchestrators.
 - **Temperature asymmetry.** Sets high temperature T=1.0 for creative exploration, and low temperature T=0.2 for audits, mergers, and verification.
 - **Quorum advancement.** Starts downstream aggregation when 80 percent of workers finish, and collects stragglers asynchronously.
 
-### SecureCoder security engineering
+### securecoder security engineering
 The securecoder skill directs vulnerability remediation workflows:
 
 1. **Threat modeling.** Maps entry points, trust boundaries, and sensitive data flows in implementation plans.
@@ -68,7 +92,7 @@ The securecoder skill directs vulnerability remediation workflows:
 5. **Proof of concept verification.** Confirms vulnerabilities no longer reproduce and documents attack scenarios in walkthrough reports.
 6. **Audit reporting.** Writes formal findings and remediation logs into walkthrough reports.
 
-### Terminal subagent delegation
+### agy-terminal-subagent delegation
 The `agy-terminal-subagent` skill delegates tasks to background CLI processes.
 
 Start a new headless session:
